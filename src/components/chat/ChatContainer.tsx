@@ -8,6 +8,7 @@ import { analyzeImage } from '@/lib/vision'
 import QuickReplyChips from './QuickReplyChips'
 import ChatInput from './ChatInput'
 import CameraBackground from '@/components/CameraBackground'
+import CameraCapture from '@/components/CameraCapture'
 import LocationSheet from '@/components/LocationSheet'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useNavigation } from '@/hooks/useNavigation'
@@ -42,6 +43,7 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
   const [navCourseId, setNavCourseId] = useState<string | null>(null)
   const [manualLocationId, setManualLocationId] = useState<string | null>(null)
   const [showSheet, setShowSheet] = useState(false)
+  const [showCamera, setShowCamera] = useState(false)
   const [sheetMode, setSheetMode] = useState<'location' | 'course'>('location')
   const fullTextRef = useRef(currentMessage.text)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -97,18 +99,11 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
   }, [navCourseId])
 
   useEffect(() => {
-    function onUserInteract() {
-      if (userInteractedRef.current) return
-      userInteractedRef.current = true
-      window.speechSynthesis.cancel()
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(' '))
-      setTimeout(() => window.speechSynthesis.cancel(), 50)
-    }
-    document.addEventListener('touchstart', onUserInteract, { once: true })
-    document.addEventListener('click', onUserInteract, { once: true })
+    document.addEventListener('touchstart', unlockAudio, { once: true })
+    document.addEventListener('click', unlockAudio, { once: true })
     return () => {
-      document.removeEventListener('touchstart', onUserInteract)
-      document.removeEventListener('click', onUserInteract)
+      document.removeEventListener('touchstart', unlockAudio)
+      document.removeEventListener('click', unlockAudio)
     }
   }, [])
 
@@ -154,18 +149,22 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
     setEmotion('speaking')
   }, [nav.currentIndex, nav.distance])
 
-  const voicesLoadedRef = useRef(false)
-  const userInteractedRef = useRef(false)
+  const audioUnlockedRef = useRef(false)
+  const audioQueueRef = useRef<string | null>(null)
 
   function stripTTS(text: string) {
     return text
-      .replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF}]|[\u{FE00}-\u{FEFF}]/gu, '')
-      .replace(/\*\*/g, '').replace(/__/g, '')
+      .replace(/[\u2700-\u27BF]|[\u{1F000}-\u{1FFFF}]|[\u{FE00}-\u{FEFF}]/gu, '')
+      .replace(/[*_#]/g, '')
       .replace(/\s+/g, ' ').trim()
   }
 
   function speakText(text: string) {
     if (typeof window === 'undefined' || !window.speechSynthesis) return
+    if (!audioUnlockedRef.current) {
+      audioQueueRef.current = text
+      return
+    }
     window.speechSynthesis.cancel()
     const clean = stripTTS(text)
     if (!clean) return
@@ -174,22 +173,31 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
     utterance.rate = 0.85
     utterance.pitch = 1.0
     utterance.volume = 1.0
-    const tryVoice = () => {
-      const voices = window.speechSynthesis.getVoices()
-      const kor = voices.find(v =>
-        v.lang.startsWith('ko') && /natural|premium|enhanced|google|microsoft/i.test(v.name)
-      ) ?? voices.find(v => v.lang.startsWith('ko'))
-      if (kor) utterance.voice = kor
-    }
-    tryVoice()
-    if (!voicesLoadedRef.current) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        voicesLoadedRef.current = true
-        tryVoice()
-        window.speechSynthesis.speak(utterance)
-      }
-    }
+    const voices = window.speechSynthesis.getVoices()
+    const kor = voices.find(v =>
+      v.lang.startsWith('ko') && /natural|premium|enhanced|google|microsoft/i.test(v.name)
+    ) ?? voices.find(v => v.lang.startsWith('ko'))
+    if (kor) utterance.voice = kor
     window.speechSynthesis.speak(utterance)
+  }
+
+  function unlockAudio() {
+    if (audioUnlockedRef.current) return
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    audioUnlockedRef.current = true
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      ctx.resume()
+      ctx.close()
+    } catch {}
+    const silent = new SpeechSynthesisUtterance('')
+    silent.volume = 0
+    window.speechSynthesis.speak(silent)
+    window.speechSynthesis.cancel()
+    if (audioQueueRef.current) {
+      speakText(audioQueueRef.current)
+      audioQueueRef.current = null
+    }
   }
 
   useEffect(() => {
@@ -336,8 +344,15 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
       </div>
 
       <div className="flex-shrink-0">
-        <ChatInput onSend={sendMessage} onPhoto={handlePhoto} disabled={isTyping} />
+        <ChatInput onSend={sendMessage} onPhoto={() => setShowCamera(true)} disabled={isTyping} />
       </div>
+
+      {showCamera && (
+        <CameraCapture
+          onCapture={(blob) => { handlePhoto(blob); setShowCamera(false) }}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
 
       {showSheet && (
         <LocationSheet

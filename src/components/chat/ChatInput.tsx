@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 
 interface ChatInputProps {
   onSend: (text: string) => void
-  onPhoto?: (blob: Blob) => void
+  onPhoto?: () => void
   disabled?: boolean
   placeholder?: string
 }
@@ -12,7 +12,6 @@ interface ChatInputProps {
 export default function ChatInput({ onSend, onPhoto, disabled, placeholder }: ChatInputProps) {
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!disabled && inputRef.current) {
@@ -28,18 +27,6 @@ export default function ChatInput({ onSend, onPhoto, disabled, placeholder }: Ch
     setInput('')
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !onPhoto) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const blob = new Blob([reader.result as ArrayBuffer], { type: file.type })
-      onPhoto(blob)
-    }
-    reader.readAsArrayBuffer(file)
-    e.target.value = ''
-  }
-
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-white/20 bg-black/40 backdrop-blur-sm px-4 py-3">
       <input
@@ -50,14 +37,6 @@ export default function ChatInput({ onSend, onPhoto, disabled, placeholder }: Ch
         placeholder={placeholder ?? '궁금한 것을 물어보세요...'}
         disabled={disabled}
         className="flex-1 rounded-full bg-white/20 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/50 disabled:opacity-50 focus:ring-2 focus:ring-amber-400"
-      />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFileChange}
       />
       <button
         type="submit"
@@ -70,7 +49,7 @@ export default function ChatInput({ onSend, onPhoto, disabled, placeholder }: Ch
       </button>
       <button
         type="button"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => onPhoto?.()}
         disabled={disabled}
         className="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
