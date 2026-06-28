@@ -33,3 +33,9 @@ export interface ChatMessage {
   type: 'text' | 'quickReply' | 'error' | 'locationChange'
   quickReplies?: string[]
 }
+
+export interface LocationData {
+  location: Location
+  intro: DocentIntro
+  qaSet: QASet[]
+}
