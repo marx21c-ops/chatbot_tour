@@ -32,12 +32,13 @@ export default function CameraBackground({ children }: { children: React.ReactNo
   }, [])
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden bg-black">
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
+        disablePictureInPicture
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-black/30" />

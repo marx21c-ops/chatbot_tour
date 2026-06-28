@@ -262,7 +262,7 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto min-h-0 gap-3 px-4 pt-48">
+      <div className="flex-1 flex flex-col items-center justify-end overflow-y-auto min-h-0 gap-2 px-4 pb-2">
         <div className="self-end mr-6">
           <DocentCharacter emotion={emotion} />
         </div>
@@ -295,7 +295,7 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
         )}
       </div>
 
-      <div className="flex-shrink-0 px-4 pb-4 pt-2">
+      <div className="flex-shrink-0">
         <ChatInput onSend={sendMessage} onPhoto={handlePhoto} disabled={isTyping} />
       </div>
 
