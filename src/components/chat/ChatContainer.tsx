@@ -239,35 +239,34 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
     setEmotion('thinking')
     setIsTyping(true)
 
-    setTimeout(() => {
-      const pool = allQASets ?? activeQaSet
-      const matched = findBestAnswer(text, activeLoc.id, pool)
-      let botMsg: ChatMessage
-      if (matched) {
-        botMsg = {
-          id: 'bot-' + Date.now(),
-          role: 'bot',
-          text: matched.answer,
-          imageUrl: matched.imageUrl,
-          timestamp: Date.now(),
-          type: 'text',
-          quickReplies: getRandomQuickReplies(activeIntro.quickReplies, 2),
-        }
-        setEmotion('speaking')
-      } else {
-        botMsg = {
-          id: 'bot-' + Date.now(),
-          role: 'bot',
-          text: `아직 그 질문에 대해 잘 배우지 못했어요.\n\n이런 질문은 어떠세요?`,
-          timestamp: Date.now(),
-          type: 'error',
-          quickReplies: activeIntro.quickReplies,
-        }
-        setEmotion('error')
+    const pool = allQASets ?? activeQaSet
+    const matched = findBestAnswer(text, activeLoc.id, pool)
+    let botMsg: ChatMessage
+    if (matched) {
+      botMsg = {
+        id: 'bot-' + Date.now(),
+        role: 'bot',
+        text: matched.answer,
+        imageUrl: matched.imageUrl,
+        timestamp: Date.now(),
+        type: 'text',
+        quickReplies: getRandomQuickReplies(activeIntro.quickReplies, 2),
       }
-      setCurrentMessage(botMsg)
-      setIsTyping(false)
-    }, 700)
+      setEmotion('speaking')
+    } else {
+      botMsg = {
+        id: 'bot-' + Date.now(),
+        role: 'bot',
+        text: `아직 그 질문에 대해 잘 배우지 못했어요.\n\n이런 질문은 어떠세요?`,
+        timestamp: Date.now(),
+        type: 'error',
+        quickReplies: activeIntro.quickReplies,
+      }
+      setEmotion('error')
+    }
+    setCurrentMessage(botMsg)
+    speakText(botMsg.text)
+    setIsTyping(false)
   }
 
   const handlePhoto = async (blob: Blob) => {
@@ -283,6 +282,7 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
       quickReplies: activeIntro.quickReplies,
     }
     setCurrentMessage(botMsg)
+    speakText(botMsg.text)
     setEmotion('speaking')
     setIsTyping(false)
   }
