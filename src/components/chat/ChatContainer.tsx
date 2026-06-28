@@ -96,6 +96,22 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
     setEmotion('greeting')
   }, [navCourseId])
 
+  useEffect(() => {
+    function onUserInteract() {
+      if (userInteractedRef.current) return
+      userInteractedRef.current = true
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(' '))
+      setTimeout(() => window.speechSynthesis.cancel(), 50)
+    }
+    document.addEventListener('touchstart', onUserInteract, { once: true })
+    document.addEventListener('click', onUserInteract, { once: true })
+    return () => {
+      document.removeEventListener('touchstart', onUserInteract)
+      document.removeEventListener('click', onUserInteract)
+    }
+  }, [])
+
   const course = courses.find(c => c.locationId === resolvedLocationId && c.id === navCourseId)
   const nav = useNavigation(course?.waypoints ?? [])
 
@@ -138,17 +154,41 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
     setEmotion('speaking')
   }, [nav.currentIndex, nav.distance])
 
+  const voicesLoadedRef = useRef(false)
+  const userInteractedRef = useRef(false)
+
+  function stripTTS(text: string) {
+    return text
+      .replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF}]|[\u{FE00}-\u{FEFF}]/gu, '')
+      .replace(/\*\*/g, '').replace(/__/g, '')
+      .replace(/\s+/g, ' ').trim()
+  }
+
   function speakText(text: string) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
     window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text)
+    const clean = stripTTS(text)
+    if (!clean) return
+    const utterance = new SpeechSynthesisUtterance(clean)
     utterance.lang = 'ko-KR'
-    utterance.rate = 0.95
+    utterance.rate = 0.85
     utterance.pitch = 1.0
-    const voices = window.speechSynthesis.getVoices()
-    const kor = voices.find(v =>
-      v.lang.startsWith('ko') && /natural|premium|enhanced/i.test(v.name)
-    ) ?? voices.find(v => v.lang.startsWith('ko'))
-    if (kor) utterance.voice = kor
+    utterance.volume = 1.0
+    const tryVoice = () => {
+      const voices = window.speechSynthesis.getVoices()
+      const kor = voices.find(v =>
+        v.lang.startsWith('ko') && /natural|premium|enhanced|google|microsoft/i.test(v.name)
+      ) ?? voices.find(v => v.lang.startsWith('ko'))
+      if (kor) utterance.voice = kor
+    }
+    tryVoice()
+    if (!voicesLoadedRef.current) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        voicesLoadedRef.current = true
+        tryVoice()
+        window.speechSynthesis.speak(utterance)
+      }
+    }
     window.speechSynthesis.speak(utterance)
   }
 
