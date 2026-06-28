@@ -44,6 +44,7 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
   const [manualLocationId, setManualLocationId] = useState<string | null>(null)
   const [showSheet, setShowSheet] = useState(false)
   const [showCamera, setShowCamera] = useState(false)
+  const [started, setStarted] = useState(false)
   const [sheetMode, setSheetMode] = useState<'location' | 'course'>('location')
   const fullTextRef = useRef(currentMessage.text)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -285,6 +286,33 @@ export default function ChatContainer({ locations, locationDataMap, defaultData 
     speakText(botMsg.text)
     setEmotion('speaking')
     setIsTyping(false)
+  }
+
+  if (!started) {
+    return (
+      <div
+        className="h-dvh w-full bg-black flex flex-col items-center justify-center gap-6 px-8"
+        onClick={() => { unlockAudio(); setStarted(true) }}
+      >
+        <div className="relative">
+          <Image
+            src="/trory.png"
+            alt="Triptory 도슨트"
+            width={200}
+            height={200}
+            className="object-contain drop-shadow-2xl"
+            priority
+            unoptimized
+          />
+        </div>
+        <h1 className="text-2xl font-bold text-white">Triptory</h1>
+        <p className="text-base text-white/70 text-center leading-relaxed">
+          안녕하세요<br />
+          Triptory AI 도슨트 서비스입니다
+        </p>
+        <p className="text-sm text-white/40 animate-pulse mt-4">화면을 터치하여 시작하기</p>
+      </div>
+    )
   }
 
   return (
