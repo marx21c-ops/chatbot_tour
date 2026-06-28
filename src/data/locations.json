@@ -1,23 +1,23 @@
 [
   {
-    "id": "bukchon",
-    "name": "북촌 한옥마을",
-    "lat": 37.5826,
-    "lng": 126.986,
-    "address": "서울 종로구 계동길 37"
+    "id": "mullae",
+    "name": "문래동",
+    "lat": 37.517,
+    "lng": 126.888,
+    "address": "서울 영등포구 문래동"
   },
   {
-    "id": "gyeongbokgung",
-    "name": "경복궁",
-    "lat": 37.5796,
-    "lng": 126.977,
-    "address": "서울 종로구 사직로 161"
+    "id": "ikseon",
+    "name": "익선동",
+    "lat": 37.5714,
+    "lng": 126.9908,
+    "address": "서울 종로구 익선동"
   },
   {
-    "id": "insadong",
-    "name": "인사동",
-    "lat": 37.5736,
-    "lng": 126.9855,
-    "address": "서울 종로구 인사동길"
+    "id": "seochon",
+    "name": "서촌",
+    "lat": 37.5794,
+    "lng": 126.9728,
+    "address": "서울 종로구 옥인동 일대"
   }
 ]

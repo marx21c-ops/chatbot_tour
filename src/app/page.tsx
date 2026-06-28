@@ -1,32 +1,34 @@
 import locations from '@/data/locations.json'
-import bukchonIntro from '@/data/bukchon/intro.json'
-import bukchonQA from '@/data/bukchon/qa.json'
-import gyeongbokgungIntro from '@/data/gyeongbokgung/intro.json'
-import insadongIntro from '@/data/insadong/intro.json'
+import mullaeIntro from '@/data/mullae/intro.json'
+import mullaeQA from '@/data/mullae/qa.json'
+import ikseonIntro from '@/data/ikseon/intro.json'
+import ikseonQA from '@/data/ikseon/qa.json'
+import seochonIntro from '@/data/seochon/intro.json'
+import seochonQA from '@/data/seochon/qa.json'
 import ChatContainer from '@/components/chat/ChatContainer'
 import type { Location, DocentIntro, QASet, LocationData } from '@/lib/types'
 
 const allLocations = locations as Location[]
 
 const locationDataMap: Record<string, LocationData> = {
-  bukchon: {
-    location: allLocations.find(l => l.id === 'bukchon')!,
-    intro: bukchonIntro as DocentIntro,
-    qaSet: bukchonQA as QASet[],
+  mullae: {
+    location: allLocations.find(l => l.id === 'mullae')!,
+    intro: mullaeIntro as DocentIntro,
+    qaSet: mullaeQA as QASet[],
   },
-  gyeongbokgung: {
-    location: allLocations.find(l => l.id === 'gyeongbokgung')!,
-    intro: gyeongbokgungIntro as DocentIntro,
-    qaSet: [],
+  ikseon: {
+    location: allLocations.find(l => l.id === 'ikseon')!,
+    intro: ikseonIntro as DocentIntro,
+    qaSet: ikseonQA as QASet[],
   },
-  insadong: {
-    location: allLocations.find(l => l.id === 'insadong')!,
-    intro: insadongIntro as DocentIntro,
-    qaSet: [],
+  seochon: {
+    location: allLocations.find(l => l.id === 'seochon')!,
+    intro: seochonIntro as DocentIntro,
+    qaSet: seochonQA as QASet[],
   },
 }
 
-const defaultData = locationDataMap.bukchon
+const defaultData = locationDataMap.mullae
 
 export default function Home() {
   return (
